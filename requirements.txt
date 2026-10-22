@@ -1,0 +1,5 @@
+pywin32
+customtkinter
+msal
+msal-extensions
+requests
