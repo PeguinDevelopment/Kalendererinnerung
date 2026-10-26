@@ -143,9 +143,22 @@ class GraphKalender(Kalender):
 
 # --- Klassisches Outlook (COM) ---------------------------------------------
 
+class SYSTEMTIME(ctypes.Structure):
+    _fields_ = [(name, ctypes.c_ushort) for name in
+                ("wYear", "wMonth", "wDayOfWeek", "wDay", "wHour", "wMinute", "wSecond", "wMilliseconds")]
+
+
 def outlook_datum(dt: datetime) -> str:
-    """Datumsformat, das Outlooks Restrict-Filter versteht."""
-    return dt.strftime("%m/%d/%Y %H:%M")
+    """Datumsformat, das Outlooks Restrict-Filter versteht.
+    Outlook liest das Datum im kurzen Datumsformat von Windows (z. B. TT.MM.JJJJ);
+    "11/02/2026" wäre dort der 11. Februar statt der 2. November."""
+    LOCALE_USER_DEFAULT, DATE_SHORTDATE = 0x400, 1
+    st = SYSTEMTIME(dt.year, dt.month, 0, dt.day)
+    puffer = ctypes.create_unicode_buffer(80)
+    if not ctypes.windll.kernel32.GetDateFormatW(LOCALE_USER_DEFAULT, DATE_SHORTDATE, ctypes.byref(st),
+                                                 None, puffer, len(puffer)):
+        raise ctypes.WinError()
+    return f"{puffer.value} {dt:%H:%M}"
 
 
 def lokale_zeit(com_datum) -> datetime:
