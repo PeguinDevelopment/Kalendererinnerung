@@ -47,7 +47,7 @@ WICHTIG = "★"  # Kennzeichen für Termine mit wichtigen Personen
 
 def person_dabei(person: str, namen: list) -> bool:
     """True, wenn alle Namensteile der Person in einem der Namen vorkommen
-    (findet "Marcel Dann" auch als "Dann, Marcel" oder "marcel.dann@...")."""
+    (findet "Vorname Nachname" auch als "Nachname, Vorname" oder "Vorname.Nachname@...")."""
     teile = person.lower().split()
     return any(all(teil in name.lower() for teil in teile) for name in namen)
 
