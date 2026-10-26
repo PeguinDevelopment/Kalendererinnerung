@@ -20,10 +20,10 @@ hervorgehoben: in den Übersichten rot und mit ★, im Pop-up mit rosa Hintergru
 Pinguin mit Schild, lauterem Ton und 6 statt 3 Sekunden gesperrten Knöpfen.
 
 ```json
-{ "wichtige_personen": ["Oussama Benfarah", "Marcel Dann"] }
+{ "wichtige_personen": ["Person 1", "Person 2"] }
 ```
 
-Die Namen werden auch in der Form „Dann, Marcel“ oder als E-Mail-Adresse erkannt.
+Die Namen werden auch in der Form „Nachname, Vorname“ oder als E-Mail-Adresse erkannt.
 
 ## Kalenderquelle
 
