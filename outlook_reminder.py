@@ -834,20 +834,29 @@ class ErinnerungsApp:
     def erinnerungen_pruefen(self):
         jetzt = datetime.now()
         for t in self.kalender.termine(jetzt, jetzt + timedelta(hours=24)):
-            if t["ganztaegig"] or t["id"] in self.erledigt or t["id"] in self.offen:
+            if t["ganztaegig"]:
                 continue
-            if t["id"] in self.schlummern:
-                faellig, grenze = self.schlummern[t["id"]], t["ende"]
-            else:
-                vorlauf = t["vorlauf"] if t["vorlauf"] is not None else self.args.minuten
-                # auch kurz nach Beginn noch erinnern, z. B. wenn der Laptop erst um 9:12 aufgeklappt wird
-                nachholen = min(t["start"] + timedelta(minutes=self.args.nachholen), t["ende"])
-                faellig, grenze = t["start"] - timedelta(minutes=vorlauf), nachholen
-            if faellig <= jetzt < grenze:
-                self.offen.add(t["id"])
-                logging.info("Erinnerung: %s (%s)", t["betreff"], f"{t['start']:%d.%m. %H:%M}")
-                ErinnerungsFenster(self.root, t, self.args.schlummern, not self.args.leise,
-                                   self.erinnerung_beendet)
+            vorlauf = t["vorlauf"] if t["vorlauf"] is not None else self.args.minuten
+            # auch kurz nach Beginn noch erinnern, z. B. wenn der Laptop erst um 9:12 aufgeklappt wird
+            nachholen = min(t["start"] + timedelta(minutes=self.args.nachholen), t["ende"])
+            self.erinnerung_pruefen(t, jetzt, t["start"] - timedelta(minutes=vorlauf), nachholen)
+
+            # zusätzlich immer kurz vor Beginn, auch wenn die erste Erinnerung schon quittiert ist;
+            # nicht, solange deren Pop-up noch offen ist
+            if self.args.letzte > 0 and t["id"] not in self.offen:
+                self.erinnerung_pruefen({**t, "id": f"{t['id']}|letzte"}, jetzt,
+                                        t["start"] - timedelta(minutes=self.args.letzte), t["start"])
+
+    def erinnerung_pruefen(self, t, jetzt, faellig, grenze):
+        if t["id"] in self.erledigt or t["id"] in self.offen:
+            return
+        if t["id"] in self.schlummern:
+            faellig, grenze = self.schlummern[t["id"]], t["ende"]
+        if faellig <= jetzt < grenze:
+            self.offen.add(t["id"])
+            logging.info("Erinnerung: %s (%s)", t["betreff"], f"{t['start']:%d.%m. %H:%M}")
+            ErinnerungsFenster(self.root, t, self.args.schlummern, not self.args.leise,
+                               self.erinnerung_beendet)
 
     def erinnerung_beendet(self, termin, aktion):
         self.offen.discard(termin["id"])
@@ -870,6 +879,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Erinnerungen und Übersichten für Outlook-Termine")
     parser.add_argument("--minuten", type=int, default=15,
                         help="Vorlauf, falls im Termin keine Erinnerung gesetzt ist (Standard: 15)")
+    parser.add_argument("--letzte", type=int, default=2,
+                        help="Zusätzliche Erinnerung so viele Minuten vor Beginn, 0 = aus (Standard: 2)")
     parser.add_argument("--schlummern", type=int, default=5, help="Schlummerzeit in Minuten (Standard: 5)")
     parser.add_argument("--nachholen", type=int, default=15,
                         help="Bis so viele Minuten nach Terminbeginn noch erinnern (Standard: 15)")

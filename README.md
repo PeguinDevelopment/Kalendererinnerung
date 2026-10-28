@@ -89,6 +89,7 @@ Meldet `install_task.ps1` „Zugriff verweigert“, PowerShell als Administrator
 | Option | Standard | Bedeutung |
 |---|---|---|
 | `--minuten` | 15 | Vorlauf, falls im Termin keine Erinnerung gesetzt ist |
+| `--letzte` | 2 | Zusätzliche Erinnerung so viele Minuten vor Beginn (0 = aus) |
 | `--schlummern` | 5 | Minuten bis zur erneuten Erinnerung |
 | `--uebersicht` | 08:55 | ab dieser Uhrzeit Tages-/Wochenübersicht zeigen |
 | `--nachholen` | 15 | bis so viele Minuten nach Terminbeginn noch erinnern (z. B. Laptop erst um 9:12 geöffnet) |
